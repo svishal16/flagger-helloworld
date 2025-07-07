@@ -14,3 +14,11 @@ config:
   scrape_interval: "15s"
   scrape_targets:
     - "localhost:9090"
+
+  blackbox:
+    enabled: true
+    service: "blackbox-exporter-prometheus-blackbox-exporter.monitoring.svc.cluster.local:9115"
+    targets:
+      - "http://myapp.canary-demo.svc.cluster.local/"
+      - "http://myapp.canary-demo.svc.cluster.local/health"
+    module: "http_2xx"
