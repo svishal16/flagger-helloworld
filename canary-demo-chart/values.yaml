@@ -12,6 +12,9 @@ canary:
   maxWeight: 50
   stepWeight: 10
   successRate: 99
+  blackbox:
+    enabled: true
+    threshold: 99
 
 grafana:
   enabled: true

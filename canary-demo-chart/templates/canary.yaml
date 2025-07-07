@@ -22,3 +22,17 @@ spec:
     threshold: {{ .Values.canary.threshold }}
     maxWeight: {{ .Values.canary.maxWeight }}
     stepWeight: {{ .Values.canary.stepWeight }}
+    metrics:
+      - name: success-rate
+        threshold: {{ .Values.canary.successRate }}
+        interval: {{ .Values.canary.interval }}
+        query: |
+          sum(rate(http_requests_total{status=~"2.."}[1m])) /
+          sum(rate(http_requests_total[1m])) * 100
+{{- if .Values.canary.blackbox.enabled }}
+      - name: availability
+        threshold: {{ .Values.canary.blackbox.threshold }}
+        interval: {{ .Values.canary.interval }}
+        query: |
+          avg(probe_success{instance=~"http://{{ .Values.app.name }}.{{ .Values.namespace }}.svc.cluster.local.*"}) * 100
+{{- end }}
