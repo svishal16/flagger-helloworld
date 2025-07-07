@@ -1,0 +1,31 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: myapp
+  namespace: canary-demo
+spec:
+  provider: istio
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  service:
+    name: myapp
+    port: 80
+    targetPort: 8080
+    gateways:
+      - myapp-gateway
+    hosts:
+      - "*"
+  analysis:
+    interval: 30s
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+      - name: success-rate
+        threshold: 99
+        interval: 30s
+        query: |
+          sum(rate(http_requests_total{status=~"2.."}[1m])) /
+          sum(rate(http_requests_total[1m])) * 100

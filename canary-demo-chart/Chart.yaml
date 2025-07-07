@@ -1,0 +1,5 @@
+apiVersion: v2
+name: canary-demo
+description: Canary deployment with Istio and Flagger
+version: 0.1.0
+appVersion: "1.0.0"

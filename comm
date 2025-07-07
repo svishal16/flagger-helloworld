@@ -1,0 +1,82 @@
+
+ 1. Verify Istio is Installed
+
+istioctl install --set profile=demo -y
+
+---------------------------------------------------------------------------------------
+
+ 2. Label the Application Namespace for Istio
+
+kubectl apply -f 1-namespace-canary-demo.yaml
+
+---------------------------------------------------------------------------------------
+
+ 3. Install Flagger via Helm for Istio
+
+helm repo add flagger https://flagger.app
+
+helm repo update
+
+helm upgrade --install flagger flagger/flagger \
+  --namespace flagger-system --create-namespace \
+  --set meshProvider=istio \
+  --set metricsServer=http://myapp.canary-demo.svc.cluster.local:9090
+
+---------------------------------------------------------------------------------------
+
+ 4. Deploy Prometheus Config and App
+
+kubectl apply -f 2-prometheus-configmap.yaml
+
+kubectl apply -f 3-myapp-deployment.yaml
+
+kubectl apply -f 3-myapp-deployment-v2.yaml
+
+---------------------------------------------------------------------------------------
+
+ 5. Apply Istio Gateway + VirtualService
+
+
+kubectl apply -f 4-myapp-virtualservice-gateway.yaml
+
+---------------------------------------------------------------------------------------
+
+ 6. Apply Flagger Canary Resource
+
+
+kubectl apply -f 5-canary-myapp.yaml
+
+---------------------------------------------------------------------------------------
+
+ 7. Deploy Grafana
+
+
+kubectl apply -f 6-grafana-namespace.yaml
+
+kubectl apply -f 7-grafana.yaml
+
+---------------------------------------------------------------------------------------
+
+ 8. Access Grafana Dashboard
+
+
+kubectl port-forward svc/grafana -n grafana 3000:80
+
+
+Visit: [http://localhost:3000]
+
+Login: `admin / admin`
+
+Data source URL:
+`http://myapp.canary-demo.svc.cluster.local:9090`
+
+---------------------------------------------------------------------------------------
+
+ 9. Trigger a Canary Deployment (Test)
+
+kubectl -n canary-demo set image deployment/myapp app=svishal/myapp:v2
+
+
+kubectl logs -n flagger-system deploy/flagger -f
+
+---------------------------------------------------------------------------------------

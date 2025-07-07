@@ -1,0 +1,24 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  provider: istio
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.app.name }}
+  service:
+    name: {{ .Values.app.name }}
+    port: 80
+    targetPort: 8080
+    gateways:
+      - {{ .Values.app.name }}-gateway
+    hosts:
+      - "*"
+  analysis:
+    interval: {{ .Values.canary.interval }}
+    threshold: {{ .Values.canary.threshold }}
+    maxWeight: {{ .Values.canary.maxWeight }}
+    stepWeight: {{ .Values.canary.stepWeight }}

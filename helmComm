@@ -1,0 +1,54 @@
+Prerequisites
+# Install Istio
+istioctl install --set profile=demo -y
+
+# Install Flagger
+helm repo add flagger https://flagger.app
+helm repo update
+
+helm upgrade --install flagger flagger/flagger \
+  --namespace flagger-system --create-namespace \
+  --set meshProvider=istio \
+  --set metricsServer=http://myapp.canary-demo.svc.cluster.local:9090
+
+# Reinstall Flagger with correct metrics server
+helm upgrade flagger flagger/flagger \
+  --namespace flagger-system \
+  --set meshProvider=istio \
+  --set metricsServer=http://prometheus.istio-system:9090
+
+# Reinstall Flagger without custom metrics server
+helm upgrade flagger flagger/flagger \
+  --namespace flagger-system \
+  --set meshProvider=istio
+  
+
+
+Deploy with Helm
+# Install the chart
+helm install canary-demo ./canary-demo-chart
+
+# Check deployment
+kubectl get pods -n canary-demo
+kubectl get canary -n canary-demo
+
+Test Application
+# Get gateway IP
+kubectl get svc istio-ingressgateway -n istio-system
+
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8081:80
+
+# Test app (replace EXTERNAL-IP)
+curl http://EXTERNAL-IP/
+
+Trigger Canary Deployment
+# Upgrade to v2 (triggers canary)
+helm upgrade canary-demo ./canary-demo-chart --set app.tag=v2
+
+# Monitor canary
+kubectl get canary myapp -n canary-demo -w
+kubectl logs -n flagger-system deploy/flagger -f
+
+Access Grafana
+kubectl port-forward svc/grafana -n grafana 3000:80
+# Visit http://localhost:3000 (admin/admin)

@@ -1,0 +1,18 @@
+app:
+  name: myapp
+  image: svishal16/myapp
+  tag: latest
+  replicas: 2
+
+namespace: canary-demo
+
+canary:
+  interval: 30s
+  threshold: 5
+  maxWeight: 50
+  stepWeight: 10
+  successRate: 99
+
+grafana:
+  enabled: true
+  namespace: grafana
